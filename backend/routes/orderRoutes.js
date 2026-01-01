@@ -169,9 +169,9 @@ router.delete('/:id', authenticate, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    // Customers can only delete pending orders
-    if (!isAdmin && order.status !== 'pending') {
-      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+    // Customers can delete pending or confirmed orders (not delivered or already cancelled)
+    if (!isAdmin && (order.status === 'delivered' || order.status === 'cancelled')) {
+      return res.status(400).json({ message: 'This order cannot be cancelled' });
     }
 
     // Restore stock if order is being cancelled

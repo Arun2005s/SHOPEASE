@@ -13,6 +13,7 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       const response = await api.get('/orders');
+      console.log('Orders fetched:', response.data);
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -23,12 +24,21 @@ const Orders = () => {
   };
 
   const handleDeleteOrder = async (orderId, status) => {
-    if (status !== 'pending') {
-      toast.error('Only pending orders can be cancelled');
+    if (status === 'delivered') {
+      toast.error('Delivered orders cannot be cancelled');
       return;
     }
 
-    if (!window.confirm('Are you sure you want to cancel this order?')) {
+    if (status === 'cancelled') {
+      toast.error('This order is already cancelled');
+      return;
+    }
+
+    const confirmMessage = status === 'pending' 
+      ? 'Are you sure you want to cancel this order?'
+      : 'Are you sure you want to cancel this confirmed order?';
+
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
@@ -100,14 +110,6 @@ const Orders = () => {
                 >
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
-                {order.status === 'pending' && (
-                  <button
-                    onClick={() => handleDeleteOrder(order._id, order.status)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm"
-                  >
-                    Cancel
-                  </button>
-                )}
               </div>
             </div>
 
@@ -130,11 +132,37 @@ const Orders = () => {
               ))}
             </div>
 
-            <div className="border-t pt-4 flex justify-between items-center">
-              <span className="font-semibold">Total Amount:</span>
-              <span className="text-xl font-bold text-primary-600">
-                ₹{order.totalAmount.toFixed(2)}
-              </span>
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="font-semibold">Total Amount:</span>
+                <span className="text-xl font-bold text-primary-600">
+                  ₹{order.totalAmount.toFixed(2)}
+                </span>
+              </div>
+              {/* Delete button - shows for pending and confirmed orders */}
+              {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                <div className="flex justify-end mt-3">
+                  <button
+                    onClick={() => handleDeleteOrder(order._id, order.status)}
+                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium flex items-center space-x-2 shadow-md"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Delete Order</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
