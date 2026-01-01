@@ -22,6 +22,26 @@ const Orders = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId, status) => {
+    if (status !== 'pending') {
+      toast.error('Only pending orders can be cancelled');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to cancel this order?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/orders/${orderId}`);
+      toast.success('Order cancelled successfully');
+      fetchOrders();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to cancel order';
+      toast.error(message);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
@@ -72,13 +92,23 @@ const Orders = () => {
                   Date: {new Date(order.date).toLocaleDateString()}
                 </p>
               </div>
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
-                  order.status
-                )}`}
-              >
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-              </span>
+              <div className="flex items-center space-x-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
+                    order.status
+                  )}`}
+                >
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
+                {order.status === 'pending' && (
+                  <button
+                    onClick={() => handleDeleteOrder(order._id, order.status)}
+                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-3 mb-4">
@@ -92,7 +122,7 @@ const Orders = () => {
                   <div className="flex-grow">
                     <p className="font-semibold">{item.name}</p>
                     <p className="text-sm text-gray-600">
-                      Quantity: {item.quantity} × ₹{item.price}
+                      Quantity: {item.quantity} {item.unit || 'piece'} × ₹{item.price}
                     </p>
                   </div>
                   <p className="font-semibold">₹{item.price * item.quantity}</p>

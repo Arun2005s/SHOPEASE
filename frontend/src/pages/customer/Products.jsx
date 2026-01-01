@@ -146,7 +146,7 @@ const Products = () => {
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
                 <p className="text-primary-600 font-bold text-xl mb-2">
-                  ₹{product.price}
+                  ₹{product.price} / {product.unit || 'piece'}
                 </p>
                 {product.tags && product.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-2">

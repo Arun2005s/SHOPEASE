@@ -51,7 +51,7 @@ router.post('/create-order', authenticate, async (req, res) => {
       items.push({
         name: product.name.substring(0, 127), // PayPal limit
         unit_amount: {
-          currency_code: 'USD',
+          currency_code: 'INR',
           value: product.price.toFixed(2),
         },
         quantity: item.quantity.toString(),
@@ -66,11 +66,11 @@ router.post('/create-order', authenticate, async (req, res) => {
       purchase_units: [
         {
           amount: {
-            currency_code: 'USD',
+            currency_code: 'INR',
             value: totalAmount.toFixed(2),
             breakdown: {
               item_total: {
-                currency_code: 'USD',
+                currency_code: 'INR',
                 value: totalAmount.toFixed(2),
               },
             },
@@ -140,6 +140,7 @@ router.post('/capture-order', authenticate, async (req, res) => {
         name: product.name,
         price: product.price,
         quantity: item.quantity,
+        unit: product.unit || 'piece',
         imageUrl: product.imageUrl,
       });
 

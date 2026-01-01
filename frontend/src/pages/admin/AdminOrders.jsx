@@ -4,11 +4,26 @@ import toast from 'react-hot-toast';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredOrders(orders);
+    } else {
+      const filtered = orders.filter((order) => {
+        const orderId = order._id.toLowerCase();
+        const search = searchQuery.toLowerCase();
+        return orderId.includes(search);
+      });
+      setFilteredOrders(filtered);
+    }
+  }, [searchQuery, orders]);
 
   const fetchOrders = async () => {
     try {
@@ -62,15 +77,30 @@ const AdminOrders = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">All Orders</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">All Orders</h1>
+        <div className="w-64">
+          <input
+            type="text"
+            placeholder="Search by Order ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+      </div>
 
-      {orders.length === 0 ? (
+      {filteredOrders.length === 0 && orders.length > 0 ? (
+        <div className="bg-white rounded-lg shadow-md p-12 text-center">
+          <p className="text-gray-600 text-lg">No orders found matching "{searchQuery}"</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
           <p className="text-gray-600 text-lg">No orders found</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -116,7 +146,7 @@ const AdminOrders = () => {
                     <div className="flex-grow">
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-gray-600">
-                        Quantity: {item.quantity} × ₹{item.price}
+                        Quantity: {item.quantity} {item.unit || 'piece'} × ₹{item.price}
                       </p>
                     </div>
                     <p className="font-semibold">₹{item.price * item.quantity}</p>

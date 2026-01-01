@@ -42,6 +42,7 @@ router.post('/', authenticate, [
         name: product.name,
         price: product.price,
         quantity: item.quantity,
+        unit: product.unit || 'piece',
         imageUrl: product.imageUrl
       });
 
@@ -149,6 +150,49 @@ router.put('/:id', authenticate, [
   } catch (error) {
     console.error('Update order error:', error);
     res.status(500).json({ message: 'Error updating order' });
+  }
+});
+
+// Delete order (customer can delete pending orders, admin can delete any)
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check if user owns the order or is admin
+    const isOwner = order.userId.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Customers can only delete pending orders
+    if (!isAdmin && order.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+    }
+
+    // Restore stock if order is being cancelled
+    if (order.status === 'pending' || order.status === 'confirmed') {
+      for (const item of order.products) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          product.stock += item.quantity;
+          await product.save();
+        }
+      }
+    }
+
+    // Update order status to cancelled instead of deleting
+    order.status = 'cancelled';
+    await order.save();
+
+    res.json({ message: 'Order cancelled successfully', order });
+  } catch (error) {
+    console.error('Delete order error:', error);
+    res.status(500).json({ message: 'Error cancelling order' });
   }
 });
 

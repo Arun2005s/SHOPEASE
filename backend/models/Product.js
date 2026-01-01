@@ -30,6 +30,12 @@ const productSchema = new mongoose.Schema({
     min: [0, 'Stock cannot be negative'],
     default: 0
   },
+  unit: {
+    type: String,
+    required: [true, 'Unit is required'],
+    enum: ['kg', 'g', 'L', 'mL', 'piece', 'pack', 'dozen', 'box'],
+    default: 'piece'
+  },
   createdAt: {
     type: Date,
     default: Date.now

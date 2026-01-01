@@ -13,6 +13,7 @@ const AdminProducts = () => {
     category: 'Rice',
     tags: '',
     stock: '',
+    unit: 'kg',
     imageUrl: '',
   });
   const [imageFile, setImageFile] = useState(null);
@@ -97,6 +98,7 @@ const AdminProducts = () => {
         category: product.category,
         tags: product.tags.join(', '),
         stock: product.stock.toString(),
+        unit: product.unit || 'kg',
         imageUrl: product.imageUrl,
       });
       setImagePreview(product.imageUrl);
@@ -108,6 +110,7 @@ const AdminProducts = () => {
         category: 'Rice',
         tags: '',
         stock: '',
+        unit: 'kg',
         imageUrl: '',
       });
       setImagePreview('');
@@ -141,6 +144,7 @@ const AdminProducts = () => {
       formDataToSend.append('category', formData.category);
       formDataToSend.append('tags', formData.tags);
       formDataToSend.append('stock', formData.stock);
+      formDataToSend.append('unit', formData.unit);
 
       if (imageFile) {
         formDataToSend.append('image', imageFile);
@@ -214,9 +218,9 @@ const AdminProducts = () => {
               />
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-primary-600 font-bold mb-2">₹{product.price}</p>
+                <p className="text-primary-600 font-bold mb-2">₹{product.price} / {product.unit || 'piece'}</p>
                 <p className="text-sm text-gray-600 mb-2">Category: {product.category}</p>
-                <p className="text-sm text-gray-600 mb-2">Stock: {product.stock}</p>
+                <p className="text-sm text-gray-600 mb-2">Stock: {product.stock} {product.unit || 'piece'}</p>
                 <div className="flex space-x-2 mt-4">
                   <button
                     onClick={() => openModal(product)}
@@ -286,6 +290,26 @@ const AdminProducts = () => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Unit
+                  </label>
+                  <select
+                    value={formData.unit}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="g">Gram (g)</option>
+                    <option value="L">Liter (L)</option>
+                    <option value="mL">Milliliter (mL)</option>
+                    <option value="piece">Piece</option>
+                    <option value="pack">Pack</option>
+                    <option value="dozen">Dozen</option>
+                    <option value="box">Box</option>
+                  </select>
                 </div>
 
                 <div>

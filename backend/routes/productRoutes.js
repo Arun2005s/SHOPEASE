@@ -88,7 +88,7 @@ router.post('/', authenticate, isAdmin, upload.single('image'), [
       }
     }
 
-    const { name, price, category, tags, stock } = req.body;
+    const { name, price, category, tags, stock, unit } = req.body;
 
     const product = new Product({
       name,
@@ -96,7 +96,8 @@ router.post('/', authenticate, isAdmin, upload.single('image'), [
       category,
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
       imageUrl,
-      stock: parseInt(stock)
+      stock: parseInt(stock),
+      unit: unit || 'piece'
     });
 
     await product.save();
@@ -157,6 +158,7 @@ router.put('/:id', authenticate, isAdmin, upload.single('image'), [
       product.tags = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
     }
     if (stock !== undefined) product.stock = parseInt(stock);
+    if (unit) product.unit = unit;
 
     await product.save();
     res.json(product);

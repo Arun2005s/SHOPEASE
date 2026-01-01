@@ -87,7 +87,7 @@ const Cart = () => {
                 />
                 <div className="flex-grow">
                   <h3 className="font-semibold text-lg">{item.name}</h3>
-                  <p className="text-primary-600 font-bold">₹{item.price}</p>
+                  <p className="text-primary-600 font-bold">₹{item.price} / {item.unit || 'piece'}</p>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">

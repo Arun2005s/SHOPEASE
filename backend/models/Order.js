@@ -25,6 +25,10 @@ const orderSchema = new mongoose.Schema({
       required: true,
       min: 1
     },
+    unit: {
+      type: String,
+      default: 'piece'
+    },
     imageUrl: {
       type: String,
       required: true
