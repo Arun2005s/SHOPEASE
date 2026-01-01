@@ -40,6 +40,12 @@ const orderSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'delivered', 'cancelled'],
     default: 'pending'
   },
+  paymentId: {
+    type: String,
+  },
+  paymentOrderId: {
+    type: String,
+  },
   date: {
     type: Date,
     default: Date.now

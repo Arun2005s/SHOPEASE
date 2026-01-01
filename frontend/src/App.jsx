@@ -45,6 +45,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="payment/success"
+                element={
+                  <ProtectedRoute>
+                    <PaymentSuccess />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
 
             {/* Admin Routes */}

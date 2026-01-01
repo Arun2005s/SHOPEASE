@@ -85,7 +85,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// Get all orders (admin only)
+// Get all orders (admin only) - MUST come before /:id route
 router.get('/all', authenticate, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -101,7 +101,7 @@ router.get('/all', authenticate, async (req, res) => {
   }
 });
 
-// Get single order
+// Get single order - MUST come after /all route
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)

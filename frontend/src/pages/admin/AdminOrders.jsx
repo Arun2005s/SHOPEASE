@@ -12,11 +12,14 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/orders/all');
+      console.log('Orders fetched:', response.data);
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast.error('Failed to fetch orders');
+      const message = error.response?.data?.message || 'Failed to fetch orders';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -76,7 +79,9 @@ const AdminOrders = () => {
                     Date: {new Date(order.date).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-600">
-                    User ID: {order.userId?.slice(-8) || 'N/A'}
+                    Customer: {typeof order.userId === 'object' && order.userId 
+                      ? `${order.userId.name} (${order.userId.email})` 
+                      : order.userId?.slice(-8) || 'N/A'}
                   </p>
                 </div>
                 <div className="flex items-center space-x-4">

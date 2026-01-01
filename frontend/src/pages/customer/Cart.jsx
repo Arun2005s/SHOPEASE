@@ -25,21 +25,29 @@ const Cart = () => {
 
     try {
       setLoading(true);
+
       const orderData = {
         products: cart.map((item) => ({
           productId: item._id,
           quantity: item.quantity,
         })),
+        amount: getCartTotal(),
       };
 
-      await api.post('/orders', orderData);
-      clearCart();
-      toast.success('Order placed successfully!');
-      navigate('/orders');
+      // Create PayPal order
+      const response = await api.post('/payment/create-order', orderData);
+      const { approveUrl, orderId } = response.data;
+
+      // Store orderId and products in sessionStorage for later use
+      sessionStorage.setItem('paypal_orderId', orderId);
+      sessionStorage.setItem('paypal_products', JSON.stringify(orderData.products));
+
+      // Redirect to PayPal
+      window.location.href = approveUrl;
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to place order';
+      console.error('Checkout error:', error);
+      const message = error.response?.data?.message || 'Failed to initiate payment';
       toast.error(message);
-    } finally {
       setLoading(false);
     }
   };
