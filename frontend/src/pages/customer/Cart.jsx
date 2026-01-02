@@ -54,65 +54,74 @@ const Cart = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-        <p className="text-gray-600 mb-8">Add some products to your cart to get started!</p>
+      <div className="container mx-auto px-4 py-20 text-center animate-fadeIn">
+        <div className="text-8xl mb-6 animate-float">🛒</div>
+        <h1 className="text-4xl font-extrabold mb-4 gradient-text">Your Cart is Empty</h1>
+        <p className="text-gray-600 text-xl mb-10">Add some products to your cart to get started!</p>
         <Link
           to="/products"
-          className="inline-block px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+          className="inline-block px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300"
         >
-          Browse Products
+          Browse Products →
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
+    <div className="container mx-auto px-4 py-8 animate-fadeIn">
+      <h1 className="text-5xl font-extrabold mb-8 text-center gradient-text">Shopping Cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            {cart.map((item) => (
+          <div className="glass rounded-2xl shadow-2xl p-6 backdrop-blur-lg">
+            {cart.map((item, index) => (
               <div
                 key={item._id}
-                className="flex items-center space-x-4 py-4 border-b border-gray-200 last:border-b-0"
+                className="flex items-center space-x-6 py-6 border-b border-gray-200 last:border-b-0 group hover:bg-gray-50 rounded-xl px-4 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-24 h-24 object-cover rounded"
-                />
-                <div className="flex-grow">
-                  <h3 className="font-semibold text-lg">{item.name}</h3>
-                  <p className="text-primary-600 font-bold">₹{item.price} / {item.unit || 'piece'}</p>
+                <div className="image-zoom w-28 h-28 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                <div className="flex-grow">
+                  <h3 className="font-bold text-xl mb-1 text-gray-800 group-hover:text-primary-600 transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="text-primary-600 font-bold text-lg">₹{item.price} / {item.unit || 'piece'}</p>
+                </div>
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-3 bg-gray-100 rounded-full p-2">
                     <button
                       onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                      className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300 transition"
+                      className="w-10 h-10 bg-white rounded-full shadow-md hover:bg-primary-600 hover:text-white transition-all duration-300 flex items-center justify-center font-bold text-lg hover:scale-110"
                     >
-                      -
+                      −
                     </button>
-                    <span className="w-12 text-center">{item.quantity}</span>
+                    <span className="w-12 text-center font-bold text-lg">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                      className="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300 transition"
+                      className="w-10 h-10 bg-white rounded-full shadow-md hover:bg-primary-600 hover:text-white transition-all duration-300 flex items-center justify-center font-bold text-lg hover:scale-110"
                     >
                       +
                     </button>
                   </div>
-                  <p className="font-semibold w-20 text-right">
-                    ₹{item.price * item.quantity}
+                  <p className="font-bold text-xl w-24 text-right text-primary-600">
+                    ₹{(item.price * item.quantity).toFixed(2)}
                   </p>
                   <button
                     onClick={() => removeFromCart(item._id)}
-                    className="text-red-600 hover:text-red-700 transition"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-full transition-all duration-300 hover:scale-110"
+                    title="Remove item"
                   >
-                    Remove
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -122,39 +131,49 @@ const Cart = () => {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-md p-6 sticky top-20">
-            <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>₹{getCartTotal().toFixed(2)}</span>
+          <div className="glass rounded-2xl shadow-2xl p-8 sticky top-24 backdrop-blur-lg">
+            <h2 className="text-3xl font-extrabold mb-6 gradient-text">Order Summary</h2>
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between text-lg">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="font-bold">₹{getCartTotal().toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Delivery</span>
-                <span className="text-green-600">Free</span>
+              <div className="flex justify-between text-lg">
+                <span className="text-gray-600">Delivery</span>
+                <span className="text-green-600 font-bold">Free 🎉</span>
               </div>
-              <div className="border-t pt-2 flex justify-between font-bold text-lg">
+              <div className="border-t-2 border-gray-200 pt-4 flex justify-between font-extrabold text-2xl">
                 <span>Total</span>
-                <span>₹{getCartTotal().toFixed(2)}</span>
+                <span className="text-primary-600">₹{getCartTotal().toFixed(2)}</span>
               </div>
             </div>
             <button
               onClick={handleCheckout}
               disabled={loading}
-              className="w-full py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:bg-gray-400 transition font-semibold"
+              className="btn-primary w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full hover:from-primary-700 hover:to-primary-800 disabled:from-gray-300 disabled:to-gray-400 transition-all font-bold text-lg shadow-xl disabled:hover:transform-none"
             >
-              {loading ? 'Processing...' : 'Proceed to Checkout'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Proceed to Checkout →'
+              )}
             </button>
             {!isAuthenticated && (
-              <p className="text-sm text-gray-600 mt-2 text-center">
-                Please login to checkout
+              <p className="text-sm text-gray-600 mt-4 text-center bg-yellow-50 p-3 rounded-lg">
+                ⚠️ Please login to checkout
               </p>
             )}
             <Link
               to="/products"
-              className="block text-center mt-4 text-primary-600 hover:text-primary-700"
+              className="block text-center mt-6 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
             >
-              Continue Shopping
+              ← Continue Shopping
             </Link>
           </div>
         </div>

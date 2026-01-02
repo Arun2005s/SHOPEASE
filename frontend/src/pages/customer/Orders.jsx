@@ -70,9 +70,9 @@ const Orders = () => {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-4">
+        <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-gray-200 h-32 rounded-lg"></div>
+            <div key={i} className="bg-gradient-to-br from-gray-200 to-gray-300 h-48 rounded-2xl animate-pulse shimmer"></div>
           ))}
         </div>
       </div>
@@ -81,30 +81,46 @@ const Orders = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-3xl font-bold mb-4">My Orders</h1>
-        <p className="text-gray-600">You haven't placed any orders yet.</p>
+      <div className="container mx-auto px-4 py-20 text-center animate-fadeIn">
+        <div className="text-8xl mb-6 animate-float">📦</div>
+        <h1 className="text-4xl font-extrabold mb-4 gradient-text">My Orders</h1>
+        <p className="text-gray-600 text-xl">You haven't placed any orders yet.</p>
+        <a
+          href="/products"
+          className="inline-block mt-8 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-110 transition-all duration-300"
+        >
+          Start Shopping →
+        </a>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">My Orders</h1>
+    <div className="container mx-auto px-4 py-8 animate-fadeIn">
+      <h1 className="text-5xl font-extrabold mb-10 text-center gradient-text">My Orders</h1>
 
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
+      <div className="space-y-6">
+        {orders.map((order, index) => (
+          <div 
+            key={order._id} 
+            className="glass rounded-2xl shadow-2xl p-8 backdrop-blur-lg card-hover"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-200">
               <div>
-                <p className="text-sm text-gray-600">Order ID: {order._id.slice(-8)}</p>
-                <p className="text-sm text-gray-600">
-                  Date: {new Date(order.date).toLocaleDateString()}
+                <p className="text-sm text-gray-600 mb-1">Order ID</p>
+                <p className="text-lg font-bold text-gray-800 font-mono">{order._id.slice(-8).toUpperCase()}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  📅 {new Date(order.date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
+                  className={`px-4 py-2 rounded-full text-sm font-bold shadow-lg ${getStatusColor(
                     order.status
                   )}`}
                 >
@@ -113,38 +129,45 @@ const Orders = () => {
               </div>
             </div>
 
-            <div className="space-y-3 mb-4">
+            <div className="space-y-4 mb-6">
               {order.products.map((item, idx) => (
-                <div key={idx} className="flex items-center space-x-4">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                <div 
+                  key={idx} 
+                  className="flex items-center space-x-6 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all group"
+                >
+                  <div className="image-zoom w-20 h-20 rounded-xl overflow-hidden shadow-lg">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   <div className="flex-grow">
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-gray-600">
-                      Quantity: {item.quantity} {item.unit || 'piece'} × ₹{item.price}
+                    <p className="font-bold text-lg text-gray-800 group-hover:text-primary-600 transition-colors">
+                      {item.name}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Quantity: <span className="font-semibold">{item.quantity}</span> {item.unit || 'piece'} × ₹{item.price}
                     </p>
                   </div>
-                  <p className="font-semibold">₹{item.price * item.quantity}</p>
+                  <p className="font-bold text-xl text-primary-600">₹{item.price * item.quantity}</p>
                 </div>
               ))}
             </div>
 
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-semibold">Total Amount:</span>
-                <span className="text-xl font-bold text-primary-600">
+            <div className="border-t-2 border-gray-200 pt-6">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-bold text-xl text-gray-700">Total Amount:</span>
+                <span className="text-3xl font-extrabold text-primary-600">
                   ₹{order.totalAmount.toFixed(2)}
                 </span>
               </div>
               {/* Delete button - shows for pending and confirmed orders */}
               {order.status !== 'delivered' && order.status !== 'cancelled' && (
-                <div className="flex justify-end mt-3">
+                <div className="flex justify-end mt-4">
                   <button
                     onClick={() => handleDeleteOrder(order._id, order.status)}
-                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium flex items-center space-x-2 shadow-md"
+                    className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full hover:from-red-700 hover:to-red-800 transition-all font-bold flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     <svg
                       className="w-5 h-5"
@@ -159,7 +182,7 @@ const Orders = () => {
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
                     </svg>
-                    <span>Delete Order</span>
+                    <span>Cancel Order</span>
                   </button>
                 </div>
               )}

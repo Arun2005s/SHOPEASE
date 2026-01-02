@@ -61,30 +61,30 @@ const Products = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Our Products</h1>
+    <div className="container mx-auto px-4 py-8 animate-fadeIn">
+      <h1 className="text-5xl font-extrabold mb-8 text-center gradient-text">Our Products</h1>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="glass p-6 rounded-2xl shadow-xl mb-8 backdrop-blur-lg">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Search
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              🔍 Search
             </label>
             <input
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
             />
           </div>
 
           {/* Category Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              📦 Category
             </label>
             <select
               value={selectedCategory}
@@ -92,7 +92,7 @@ const Products = () => {
                 setSelectedCategory(e.target.value);
                 setSearchParams({ category: e.target.value });
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md cursor-pointer"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -104,13 +104,13 @@ const Products = () => {
 
           {/* Sort */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sort By
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              🔄 Sort By
             </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="price-low">Price: Low to High</option>
@@ -122,56 +122,65 @@ const Products = () => {
 
       {/* Products Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-gray-200 animate-pulse h-80 rounded-lg"></div>
+            <div key={i} className="bg-gradient-to-br from-gray-200 to-gray-300 h-96 rounded-2xl animate-pulse shimmer"></div>
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No products found</p>
+        <div className="text-center py-20">
+          <div className="text-6xl mb-4">🔍</div>
+          <p className="text-gray-500 text-2xl font-semibold">No products found</p>
+          <p className="text-gray-400 mt-2">Try adjusting your filters</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {products.map((product, index) => (
             <div
               key={product._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+              className="bg-white rounded-2xl shadow-xl overflow-hidden card-hover group"
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-primary-600 font-bold text-xl mb-2">
-                  ₹{product.price} / {product.unit || 'piece'}
+              <div className="image-zoom h-56 overflow-hidden bg-gray-100">
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="font-bold text-xl mb-2 text-gray-800 group-hover:text-primary-600 transition-colors line-clamp-2">
+                  {product.name}
+                </h3>
+                <p className="text-primary-600 font-bold text-2xl mb-3">
+                  ₹{product.price} <span className="text-sm text-gray-500 font-normal">/ {product.unit || 'piece'}</span>
                 </p>
                 {product.tags && product.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="flex flex-wrap gap-2 mb-3">
                     {product.tags.slice(0, 2).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded"
+                        className="text-xs bg-gradient-to-r from-primary-100 to-primary-200 text-primary-700 px-3 py-1 rounded-full font-semibold"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
                 )}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-4">
                   <span
-                    className={`text-sm ${
-                      product.stock > 0 ? 'text-green-600' : 'text-red-600'
+                    className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                      product.stock > 0 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {product.stock > 0 ? `Stock: ${product.stock}` : 'Out of Stock'}
+                    {product.stock > 0 ? `✓ ${product.stock} left` : '✗ Out of Stock'}
                   </span>
                   <button
                     onClick={() => handleAddToCart(product)}
                     disabled={product.stock === 0}
-                    className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+                    className="btn-primary px-5 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full font-semibold text-sm disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed disabled:hover:transform-none"
                   >
                     Add to Cart
                   </button>
