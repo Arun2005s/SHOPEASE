@@ -167,8 +167,20 @@ const AdminProducts = () => {
       closeModal();
       fetchProducts();
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to save product';
+      console.error('Error saving product:', error);
+      const message = error.response?.data?.message || 
+                     error.response?.data?.error || 
+                     error.message || 
+                     'Failed to save product';
       toast.error(message);
+      
+      // Log full error for debugging
+      if (error.response?.data?.errors) {
+        console.error('Validation errors:', error.response.data.errors);
+        error.response.data.errors.forEach(err => {
+          toast.error(err.msg || err.message);
+        });
+      }
     }
   };
 

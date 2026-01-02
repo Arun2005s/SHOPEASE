@@ -90,11 +90,21 @@ router.post('/', authenticate, isAdmin, upload.single('image'), [
 
     const { name, price, category, tags, stock, unit } = req.body;
 
+    // Process tags
+    let processedTags = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        processedTags = tags.filter(t => t.trim() !== '');
+      } else if (typeof tags === 'string') {
+        processedTags = tags.split(',').map(t => t.trim()).filter(t => t !== '');
+      }
+    }
+
     const product = new Product({
       name,
       price: parseFloat(price),
       category,
-      tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
+      tags: processedTags,
       imageUrl,
       stock: parseInt(stock),
       unit: unit || 'piece'
@@ -104,7 +114,10 @@ router.post('/', authenticate, isAdmin, upload.single('image'), [
     res.status(201).json(product);
   } catch (error) {
     console.error('Create product error:', error);
-    res.status(500).json({ message: 'Error creating product' });
+    res.status(500).json({ 
+      message: error.message || 'Error creating product',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -125,7 +138,7 @@ router.put('/:id', authenticate, isAdmin, upload.single('image'), [
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    const { name, price, category, tags, stock, imageUrl: newImageUrl } = req.body;
+    const { name, price, category, tags, stock, unit, imageUrl: newImageUrl } = req.body;
 
     // Handle image update
     if (req.file) {
@@ -155,7 +168,13 @@ router.put('/:id', authenticate, isAdmin, upload.single('image'), [
     if (price !== undefined) product.price = parseFloat(price);
     if (category) product.category = category;
     if (tags !== undefined) {
-      product.tags = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
+      if (Array.isArray(tags)) {
+        product.tags = tags.filter(t => t.trim() !== '');
+      } else if (typeof tags === 'string') {
+        product.tags = tags.split(',').map(t => t.trim()).filter(t => t !== '');
+      } else {
+        product.tags = [];
+      }
     }
     if (stock !== undefined) product.stock = parseInt(stock);
     if (unit) product.unit = unit;
@@ -164,7 +183,10 @@ router.put('/:id', authenticate, isAdmin, upload.single('image'), [
     res.json(product);
   } catch (error) {
     console.error('Update product error:', error);
-    res.status(500).json({ message: 'Error updating product' });
+    res.status(500).json({ 
+      message: error.message || 'Error updating product',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
