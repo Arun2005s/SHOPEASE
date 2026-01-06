@@ -40,14 +40,14 @@ const Footer = () => {
             <ul className="space-y-3 text-gray-300">
               <li className="flex items-center gap-3">
                 <span className="text-2xl">📧</span>
-                <a href="mailto:support@shopease.com" className="hover:text-primary-400 transition-colors">
-                  support@shopease.com
+                <a href="mailto:arunrealm2005@gmail.com" className="hover:text-primary-400 transition-colors">
+                  arunrealm2005@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <span className="text-2xl">📞</span>
-                <a href="tel:+911234567890" className="hover:text-primary-400 transition-colors">
-                  +91 1234567890
+                <a href="tel:+919345309926" className="hover:text-primary-400 transition-colors">
+                  +91 9345309926
                 </a>
               </li>
             </ul>
