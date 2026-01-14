@@ -1,5 +1,6 @@
 import express from 'express';
-import paypal from '@paypal/checkout-server-sdk';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import { authenticate } from '../middleware/authMiddleware.js';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
@@ -7,34 +8,23 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-// Configure PayPal environment
-function environment() {
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+// Initialize Razorpay instance
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-  if (process.env.PAYPAL_MODE === 'live') {
-    return new paypal.core.LiveEnvironment(clientId, clientSecret);
-  } else {
-    return new paypal.core.SandboxEnvironment(clientId, clientSecret);
-  }
-}
-
-function client() {
-  return new paypal.core.PayPalHttpClient(environment());
-}
-
-// Create PayPal order
+// Create Razorpay order
 router.post('/create-order', authenticate, async (req, res) => {
   try {
-    const { products, amount } = req.body;
+    const { products } = req.body;
 
     if (!products || products.length === 0) {
       return res.status(400).json({ message: 'Products are required' });
     }
 
-    // Validate products and calculate total
+    // Validate products and calculate total amount from DB (never trust client amount)
     let totalAmount = 0;
-    const items = [];
 
     for (const item of products) {
       const product = await Product.findById(item.productId);
@@ -47,78 +37,55 @@ router.post('/create-order', authenticate, async (req, res) => {
 
       const itemTotal = product.price * item.quantity;
       totalAmount += itemTotal;
-
-      items.push({
-        name: product.name.substring(0, 127), // PayPal limit
-        unit_amount: {
-          currency_code: 'INR',
-          value: product.price.toFixed(2),
-        },
-        quantity: item.quantity.toString(),
-      });
     }
 
-    // Create PayPal order request
-    const request = new paypal.orders.OrdersCreateRequest();
-    request.prefer('return=representation');
-    request.requestBody({
-      intent: 'CAPTURE',
-      purchase_units: [
-        {
-          amount: {
-            currency_code: 'INR',
-            value: totalAmount.toFixed(2),
-            breakdown: {
-              item_total: {
-                currency_code: 'INR',
-                value: totalAmount.toFixed(2),
-              },
-            },
-          },
-          items: items,
-        },
-      ],
-      application_context: {
-        brand_name: 'ShopEase',
-        landing_page: 'BILLING',
-        user_action: 'PAY_NOW',
-        return_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`,
-        cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/cart`,
+    const options = {
+      amount: Math.round(totalAmount * 100), // convert to paise
+      currency: 'INR',
+      receipt: `order_rcpt_${Date.now()}`,
+      notes: {
+        userId: req.user._id.toString(),
       },
-    });
+    };
 
-    const order = await client().execute(request);
+    const order = await razorpay.orders.create(options);
 
     res.json({
-      orderId: order.result.id,
-      approveUrl: order.result.links.find((link) => link.rel === 'approve').href,
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
-    console.error('Create PayPal order error:', error);
+    console.error('Create Razorpay order error:', error);
     res.status(500).json({ message: 'Failed to create payment order' });
   }
 });
 
-// Capture PayPal order and create order in database
-router.post('/capture-order', authenticate, async (req, res) => {
+// Verify Razorpay payment and create order in database
+router.post('/verify', authenticate, async (req, res) => {
   try {
-    const { orderId, products } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
 
-    if (!orderId) {
-      return res.status(400).json({ message: 'Order ID is required' });
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ message: 'Payment details are incomplete' });
     }
 
-    // Capture the PayPal order
-    const request = new paypal.orders.OrdersCaptureRequest(orderId);
-    request.requestBody({});
-
-    const capture = await client().execute(request);
-
-    if (capture.result.status !== 'COMPLETED') {
-      return res.status(400).json({ message: 'Payment not completed' });
+    if (!products || products.length === 0) {
+      return res.status(400).json({ message: 'Products are required' });
     }
 
-    // Payment completed, create order in database
+    const generatedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed' });
+    }
+
+    // Signature verified - process order
     let totalAmount = 0;
     const orderProducts = [];
 
@@ -154,8 +121,8 @@ router.post('/capture-order', authenticate, async (req, res) => {
       userId: req.user._id,
       products: orderProducts,
       totalAmount,
-      paymentId: capture.result.purchase_units[0].payments.captures[0].id,
-      paymentOrderId: orderId,
+      paymentId: razorpay_payment_id,
+      paymentOrderId: razorpay_order_id,
       status: 'confirmed',
     });
 
@@ -172,8 +139,8 @@ router.post('/capture-order', authenticate, async (req, res) => {
       message: 'Payment successful and order placed',
     });
   } catch (error) {
-    console.error('Capture PayPal order error:', error);
-    res.status(500).json({ message: 'Failed to capture payment' });
+    console.error('Verify Razorpay payment error:', error);
+    res.status(500).json({ message: 'Failed to verify payment' });
   }
 });
 

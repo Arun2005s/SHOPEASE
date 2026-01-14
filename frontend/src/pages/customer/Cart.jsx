@@ -31,19 +31,66 @@ const Cart = () => {
           productId: item._id,
           quantity: item.quantity,
         })),
-        amount: getCartTotal(),
       };
 
-      // Create PayPal order
+      // Create Razorpay order
       const response = await api.post('/payment/create-order', orderData);
-      const { approveUrl, orderId } = response.data;
+      const { orderId, amount, currency, key } = response.data;
 
-      // Store orderId and products in sessionStorage for later use
-      sessionStorage.setItem('paypal_orderId', orderId);
-      sessionStorage.setItem('paypal_products', JSON.stringify(orderData.products));
+      if (!window.Razorpay) {
+        toast.error('Payment SDK not loaded. Please refresh the page and try again.');
+        setLoading(false);
+        return;
+      }
 
-      // Redirect to PayPal
-      window.location.href = approveUrl;
+      const options = {
+        key,
+        amount,
+        currency,
+        name: 'ShopEase',
+        description: 'Order Payment',
+        order_id: orderId,
+        handler: async function (paymentResult) {
+          try {
+            const verifyResponse = await api.post('/payment/verify', {
+              razorpay_order_id: paymentResult.razorpay_order_id,
+              razorpay_payment_id: paymentResult.razorpay_payment_id,
+              razorpay_signature: paymentResult.razorpay_signature,
+              products: orderData.products,
+            });
+
+            if (verifyResponse.data.success) {
+              clearCart();
+              toast.success('Payment successful! Order placed.');
+              navigate('/orders');
+            } else {
+              toast.error('Payment verification failed.');
+            }
+          } catch (verifyError) {
+            console.error('Payment verification error:', verifyError);
+            const message =
+              verifyError.response?.data?.message || 'Failed to verify payment';
+            toast.error(message);
+          } finally {
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: 'ShopEase Customer',
+        },
+        theme: {
+          color: '#dc2626',
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            toast('Payment cancelled');
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
       console.error('Checkout error:', error);
       const message = error.response?.data?.message || 'Failed to initiate payment';
