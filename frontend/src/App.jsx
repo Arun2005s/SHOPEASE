@@ -9,7 +9,6 @@ import Home from './pages/customer/Home';
 import Products from './pages/customer/Products';
 import Cart from './pages/customer/Cart';
 import Orders from './pages/customer/Orders';
-import PaymentSuccess from './pages/customer/PaymentSuccess';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
@@ -43,14 +42,6 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Orders />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="payment/success"
-                element={
-                  <ProtectedRoute>
-                    <PaymentSuccess />
                   </ProtectedRoute>
                 }
               />
