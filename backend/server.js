@@ -26,25 +26,35 @@ console.log('   RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '✅ Se
 
 const app = express();
 
-// Middleware
+// Middleware - CORS Configuration
+const isProduction = process.env.NODE_ENV === 'production';
 const allowedOrigins = process.env.FRONTEND_URL 
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : ['http://localhost:5173'];
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
+  : isProduction 
+    ? [] // In production, require FRONTEND_URL to be set
+    : ['http://localhost:5173']; // Only use localhost fallback in development
+
+// Warn if FRONTEND_URL is not set in production
+if (isProduction && !process.env.FRONTEND_URL) {
+  console.warn('⚠️  WARNING: FRONTEND_URL is not set in production! CORS may block requests.');
+}
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, etc.) in development
-    if (!origin && process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
+    // Allow requests with no origin (mobile apps, Postman, etc.) only in development
+    if (!origin) {
+      return callback(isProduction ? new Error('Not allowed by CORS') : null, !isProduction);
     }
     
     // Check if origin is in allowed list
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
-    } else if (process.env.NODE_ENV !== 'production') {
-      // In development, allow all origins
+    } else if (!isProduction) {
+      // In development, allow all origins for easier testing
       callback(null, true);
     } else {
+      // In production, strictly enforce allowed origins
+      console.warn(`🚫 CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
