@@ -8,11 +8,25 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-// Initialize Razorpay instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Initialize Razorpay instance (lazy initialization)
+let razorpay = null;
+
+const getRazorpayInstance = () => {
+  if (!razorpay) {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (!keyId || !keySecret) {
+      throw new Error('Razorpay credentials not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file');
+    }
+    
+    razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+  return razorpay;
+};
 
 // Create Razorpay order
 router.post('/create-order', authenticate, async (req, res) => {
@@ -48,7 +62,7 @@ router.post('/create-order', authenticate, async (req, res) => {
       },
     };
 
-    const order = await razorpay.orders.create(options);
+    const order = await getRazorpayInstance().orders.create(options);
 
     res.json({
       success: true,
