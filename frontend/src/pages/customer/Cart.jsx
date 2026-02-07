@@ -4,14 +4,16 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/axios';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import CheckoutForm from '../../components/customer/CheckoutForm';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!isAuthenticated) {
       toast.error('Please login to checkout');
       navigate('/login');
@@ -23,6 +25,10 @@ const Cart = () => {
       return;
     }
 
+    setShowCheckoutForm(true);
+  };
+
+  const handleConfirmCheckout = async (checkoutData) => {
     try {
       setLoading(true);
 
@@ -31,69 +37,97 @@ const Cart = () => {
           productId: item._id,
           quantity: item.quantity,
         })),
+        paymentMethod: checkoutData.paymentMethod,
+        shippingAddress: {
+          fullName: checkoutData.fullName,
+          phone: checkoutData.phone,
+          addressLine1: checkoutData.addressLine1,
+          addressLine2: checkoutData.addressLine2,
+          city: checkoutData.city,
+          state: checkoutData.state,
+          pincode: checkoutData.pincode,
+          country: checkoutData.country,
+        },
       };
 
-      // Create Razorpay order
-      const response = await api.post('/payment/create-order', orderData);
-      const { orderId, amount, currency, key } = response.data;
+      if (checkoutData.paymentMethod === 'cash_on_delivery') {
+        // Create order directly for COD
+        const response = await api.post('/orders', orderData);
+        if (response.data) {
+          clearCart();
+          toast.success('Order placed successfully!');
+          setShowCheckoutForm(false);
+          navigate('/orders');
+        }
+      } else {
+        // Online payment flow
+        const response = await api.post('/payment/create-order', {
+          products: orderData.products,
+        });
+        const { orderId, amount, currency, key } = response.data;
 
-      if (!window.Razorpay) {
-        toast.error('Payment SDK not loaded. Please refresh the page and try again.');
-        setLoading(false);
-        return;
-      }
+        if (!window.Razorpay) {
+          toast.error('Payment SDK not loaded. Please refresh the page and try again.');
+          setLoading(false);
+          return;
+        }
 
-      const options = {
-        key,
-        amount,
-        currency,
-        name: 'ShopEase',
-        description: 'Order Payment',
-        order_id: orderId,
-        handler: async function (paymentResult) {
-          try {
-            const verifyResponse = await api.post('/payment/verify', {
-              razorpay_order_id: paymentResult.razorpay_order_id,
-              razorpay_payment_id: paymentResult.razorpay_payment_id,
-              razorpay_signature: paymentResult.razorpay_signature,
-              products: orderData.products,
-            });
+        const options = {
+          key,
+          amount,
+          currency,
+          name: 'ShopEase',
+          description: 'Order Payment',
+          order_id: orderId,
+          handler: async function (paymentResult) {
+            try {
+              const verifyResponse = await api.post('/payment/verify', {
+                razorpay_order_id: paymentResult.razorpay_order_id,
+                razorpay_payment_id: paymentResult.razorpay_payment_id,
+                razorpay_signature: paymentResult.razorpay_signature,
+                products: orderData.products,
+                paymentMethod: orderData.paymentMethod,
+                shippingAddress: orderData.shippingAddress,
+              });
 
-            if (verifyResponse.data.success) {
-              clearCart();
-              toast.success('Payment successful! Order placed.');
-              navigate('/orders');
-            } else {
-              toast.error('Payment verification failed.');
+              if (verifyResponse.data.success) {
+                clearCart();
+                toast.success('Payment successful! Order placed.');
+                setShowCheckoutForm(false);
+                navigate('/orders');
+              } else {
+                toast.error('Payment verification failed.');
+              }
+            } catch (verifyError) {
+              console.error('Payment verification error:', verifyError);
+              const message =
+                verifyError.response?.data?.message || 'Failed to verify payment';
+              toast.error(message);
+            } finally {
+              setLoading(false);
             }
-          } catch (verifyError) {
-            console.error('Payment verification error:', verifyError);
-            const message =
-              verifyError.response?.data?.message || 'Failed to verify payment';
-            toast.error(message);
-          } finally {
-            setLoading(false);
-          }
-        },
-        prefill: {
-          name: 'ShopEase Customer',
-        },
-        theme: {
-          color: '#dc2626',
-        },
-        modal: {
-          ondismiss: () => {
-            setLoading(false);
-            toast('Payment cancelled');
           },
-        },
-      };
+          prefill: {
+            name: checkoutData.fullName,
+            contact: checkoutData.phone,
+          },
+          theme: {
+            color: '#dc2626',
+          },
+          modal: {
+            ondismiss: () => {
+              setLoading(false);
+              toast('Payment cancelled');
+            },
+          },
+        };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+      }
     } catch (error) {
       console.error('Checkout error:', error);
-      const message = error.response?.data?.message || 'Failed to initiate payment';
+      const message = error.response?.data?.message || 'Failed to process order';
       toast.error(message);
       setLoading(false);
     }
@@ -225,6 +259,18 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      {/* Checkout Form Modal */}
+      <CheckoutForm
+        isOpen={showCheckoutForm}
+        onClose={() => {
+          setShowCheckoutForm(false);
+          setLoading(false);
+        }}
+        onConfirm={handleConfirmCheckout}
+        cartTotal={getCartTotal()}
+        loading={loading}
+      />
     </div>
   );
 };

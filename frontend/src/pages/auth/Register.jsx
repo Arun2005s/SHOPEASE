@@ -1,27 +1,161 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Swal from 'sweetalert2';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Phone number validation regex (supports various formats)
+  const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
+
+  // Email validation regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateForm = () => {
+    // Validate name
+    if (!name.trim()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter your full name',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    if (name.trim().length < 2) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Name must be at least 2 characters long',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    // Validate email
+    if (!email.trim()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter your email address',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    if (!emailRegex.test(email)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter a valid email address',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    // Validate phone
+    if (!phone.trim()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter your phone number',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    // Remove spaces, dashes, and parentheses for validation
+    const cleanPhone = phone.replace(/[\s\-()]/g, '');
+    if (!phoneRegex.test(phone) || cleanPhone.length < 10) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter a valid phone number (at least 10 digits)',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    // Validate password
+    if (!password) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter a password',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    if (password.length < 6) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Password must be at least 6 characters long',
+        confirmButtonColor: '#dc2626',
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form using SweetAlert2
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-    const result = await register(name, email, password);
-    setLoading(false);
-    if (result.success) {
-      // Redirect admin users to admin panel, customers to home
-      if (result.user?.role === 'admin') {
-        navigate('/admin');
+    
+    try {
+      const result = await register(name, email, phone, password);
+      setLoading(false);
+      
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Registration Successful!',
+          text: 'Welcome to ShopEase! Your account has been created.',
+          confirmButtonColor: '#dc2626',
+          timer: 2000,
+          showConfirmButton: true,
+        }).then(() => {
+          // Redirect admin users to admin panel, customers to home
+          if (result.user?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        });
       } else {
-        navigate('/');
+        // Show error from backend
+        Swal.fire({
+          icon: 'error',
+          title: 'Registration Failed',
+          text: result.error || 'Something went wrong. Please try again.',
+          confirmButtonColor: '#dc2626',
+        });
       }
+    } catch (error) {
+      setLoading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: 'An unexpected error occurred. Please try again.',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 
@@ -81,21 +215,82 @@ const Register = () => {
                 />
               </div>
               <div>
+                <label htmlFor="phone" className="block text-sm font-bold text-gray-700 mb-2">
+                  📱 Phone Number
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
+                  placeholder="Enter your phone number (e.g., +91 1234567890)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <div>
                 <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-2">
                   🔒 Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
-                  placeholder="Password (min 6 characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    className="appearance-none relative block w-full px-4 py-3 pr-12 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md"
+                    placeholder="Password (min 6 characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -126,4 +321,3 @@ const Register = () => {
 };
 
 export default Register;
-

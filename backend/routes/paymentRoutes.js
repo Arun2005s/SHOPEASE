@@ -5,6 +5,9 @@ import { authenticate } from '../middleware/authMiddleware.js';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
+import Notification from '../models/Notification.js';
+import { sendOrderPlacedSMS } from '../services/twilioService.js';
+import { sendOrderPlacedEmail } from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -80,7 +83,7 @@ router.post('/create-order', authenticate, async (req, res) => {
 // Verify Razorpay payment and create order in database
 router.post('/verify', authenticate, async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, products, paymentMethod, shippingAddress } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ message: 'Payment details are incomplete' });
@@ -88,6 +91,10 @@ router.post('/verify', authenticate, async (req, res) => {
 
     if (!products || products.length === 0) {
       return res.status(400).json({ message: 'Products are required' });
+    }
+
+    if (!paymentMethod || !shippingAddress) {
+      return res.status(400).json({ message: 'Payment method and shipping address are required' });
     }
 
     const generatedSignature = crypto
@@ -130,6 +137,9 @@ router.post('/verify', authenticate, async (req, res) => {
       await product.save();
     }
 
+    // Get user details
+    const user = await User.findById(req.user._id);
+
     // Create order in database
     const order = new Order({
       userId: req.user._id,
@@ -137,6 +147,8 @@ router.post('/verify', authenticate, async (req, res) => {
       totalAmount,
       paymentId: razorpay_payment_id,
       paymentOrderId: razorpay_order_id,
+      paymentMethod,
+      shippingAddress,
       status: 'confirmed',
     });
 
@@ -146,6 +158,63 @@ router.post('/verify', authenticate, async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
       $push: { orders: order._id },
     });
+
+    // Create notification for admin
+    const adminUsers = await User.find({ role: 'admin' });
+    for (const admin of adminUsers) {
+      await Notification.create({
+        type: 'order_placed',
+        title: 'New Order Placed',
+        message: `${user.name} (${user.email}) has placed a new order of ₹${totalAmount.toFixed(2)}. Order ID: ${order._id}`,
+        orderId: order._id,
+        userId: req.user._id
+      });
+    }
+
+    // Send SMS and Email to customer when order is placed
+    const customerName = shippingAddress?.fullName || user.name || 'Customer';
+    const customerEmail = user.email;
+
+    // Send SMS
+    if (shippingAddress && shippingAddress.phone) {
+      console.log(`📱 Order Placed (Payment) - Attempting to send SMS to ${shippingAddress.phone} for order ${order._id}`);
+      const smsResult = await sendOrderPlacedSMS(
+        shippingAddress.phone,
+        order._id.toString(),
+        totalAmount,
+        customerName
+      );
+      if (smsResult) {
+        console.log(`✅ Order confirmation SMS sent for order ${order._id}`);
+      } else {
+        console.log(`⚠️ Order confirmation SMS failed for order ${order._id}`);
+      }
+    } else {
+      console.log(`⚠️ No phone number in shipping address for order ${order._id}`);
+    }
+
+    // Send Email
+    if (customerEmail) {
+      console.log(`📧 Order Placed (Payment) - Attempting to send email to ${customerEmail} for order ${order._id}`);
+      const emailResult = await sendOrderPlacedEmail(
+        customerEmail,
+        order._id.toString(),
+        totalAmount,
+        customerName,
+        {
+          products: orderProducts,
+          shippingAddress,
+          paymentMethod
+        }
+      );
+      if (emailResult) {
+        console.log(`✅ Order confirmation email sent for order ${order._id}`);
+      } else {
+        console.log(`⚠️ Order confirmation email failed for order ${order._id}`);
+      }
+    } else {
+      console.log(`⚠️ No email found for user ${user._id}`);
+    }
 
     res.json({
       success: true,

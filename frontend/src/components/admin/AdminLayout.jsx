@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import NotificationPanel from './NotificationPanel';
 
 const AdminLayout = () => {
   const { logout, user } = useAuth();
@@ -24,6 +25,7 @@ const AdminLayout = () => {
               <span className="hidden sm:inline text-sm text-gray-700 truncate max-w-[140px]">
                 Welcome, {user?.name}
               </span>
+              <NotificationPanel />
               <Link
                 to="/"
                 className="text-gray-700 hover:text-primary-600 transition text-sm sm:text-base"

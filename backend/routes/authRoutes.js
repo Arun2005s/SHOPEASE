@@ -9,6 +9,9 @@ const router = express.Router();
 router.post('/register', [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
+  body('phone').trim().notEmpty().withMessage('Phone number is required')
+    .matches(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/)
+    .withMessage('Please provide a valid phone number'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
   try {
@@ -17,7 +20,7 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, phone, password, role } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -25,10 +28,17 @@ router.post('/register', [
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
+    // Check if phone number is already registered
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone) {
+      return res.status(400).json({ message: 'User already exists with this phone number' });
+    }
+
     // Create user
     const user = new User({
       name,
       email,
+      phone,
       password,
       role: role || 'customer'
     });
@@ -48,6 +58,7 @@ router.post('/register', [
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role
       }
     });

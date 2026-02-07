@@ -1,6 +1,13 @@
 // Load environment variables FIRST, before any other imports
 import dotenv from 'dotenv';
-dotenv.config({ path: './.env' });
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from backend directory (absolute path)
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 import express from 'express';
 import mongoose from 'mongoose';
@@ -11,6 +18,7 @@ import productRoutes from './routes/productRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import User from './models/User.js';
 
 // Debug: Log all environment variables (without exposing secrets)
@@ -23,6 +31,14 @@ console.log('   CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '�
 console.log('   CLOUDINARY_URL:', process.env.CLOUDINARY_URL ? '✅ Set' : '❌ Missing');
 console.log('   RAZORPAY_KEY_ID:', process.env.RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing');
 console.log('   RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? '✅ Set' : '❌ Missing');
+console.log('   TWILIO_ACCOUNT_SID:', process.env.TWILIO_ACCOUNT_SID ? '✅ Set' : '❌ Missing');
+console.log('   TWILIO_AUTH_TOKEN:', process.env.TWILIO_AUTH_TOKEN ? '✅ Set' : '❌ Missing');
+console.log('   TWILIO_PHONE_NUMBER:', process.env.TWILIO_PHONE_NUMBER ? '✅ Set (' + process.env.TWILIO_PHONE_NUMBER + ')' : '❌ Missing');
+console.log('   EMAIL_HOST:', process.env.EMAIL_HOST ? '✅ Set (' + process.env.EMAIL_HOST + ')' : '❌ Missing (default: smtp.gmail.com)');
+console.log('   EMAIL_PORT:', process.env.EMAIL_PORT ? '✅ Set (' + process.env.EMAIL_PORT + ')' : '❌ Missing (default: 587)');
+console.log('   EMAIL_USER:', process.env.EMAIL_USER ? '✅ Set' : '❌ Missing');
+console.log('   EMAIL_PASSWORD:', process.env.EMAIL_PASSWORD ? '✅ Set' : '❌ Missing');
+console.log('   EMAIL_FROM:', process.env.EMAIL_FROM ? '✅ Set (' + process.env.EMAIL_FROM + ')' : '❌ Missing (will use EMAIL_USER)');
 
 const app = express();
 
@@ -69,6 +85,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

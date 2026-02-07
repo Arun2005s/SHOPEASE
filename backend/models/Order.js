@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'delivered', 'cancelled'],
+    enum: ['pending', 'confirmed', 'packed', 'delivered', 'cancelled'],
     default: 'pending'
   },
   paymentId: {
@@ -49,6 +49,44 @@ const orderSchema = new mongoose.Schema({
   },
   paymentOrderId: {
     type: String,
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['cash_on_delivery', 'online_payment'],
+    required: false // Made optional for backward compatibility with existing orders
+  },
+  shippingAddress: {
+    fullName: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    phone: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    addressLine1: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    addressLine2: {
+      type: String
+    },
+    city: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    state: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    pincode: {
+      type: String,
+      required: false // Made optional for backward compatibility
+    },
+    country: {
+      type: String,
+      default: 'India'
+    }
   },
   date: {
     type: Date,

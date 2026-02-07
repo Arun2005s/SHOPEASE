@@ -42,11 +42,16 @@ const AdminOrders = () => {
 
   const updateOrderStatus = async (orderId, status) => {
     try {
-      await api.put(`/orders/${orderId}`, { status });
-      toast.success('Order status updated');
+      const response = await api.put(`/orders/${orderId}`, { status });
+      toast.success('Order status updated successfully');
       fetchOrders();
     } catch (error) {
-      toast.error('Failed to update order status');
+      console.error('Update order status error:', error);
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.errors?.[0]?.msg ||
+                          error.message || 
+                          'Failed to update order status';
+      toast.error(errorMessage);
     }
   };
 
@@ -56,6 +61,8 @@ const AdminOrders = () => {
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'packed':
+        return 'bg-purple-100 text-purple-800';
       case 'delivered':
         return 'bg-blue-100 text-blue-800';
       case 'cancelled':
@@ -129,6 +136,7 @@ const AdminOrders = () => {
                   >
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
+                    <option value="packed">Packed</option>
                     <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
