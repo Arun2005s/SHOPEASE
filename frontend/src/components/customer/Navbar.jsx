@@ -1,4 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 
@@ -6,11 +7,21 @@ const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const { getCartItemsCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  // Auto-close mobile menu on route change
+  useEffect(() => {
+    if (mobileOpen) {
+      setMobileOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
     <nav className="glass shadow-xl sticky top-0 z-50 backdrop-blur-lg border-b border-white/20">
@@ -57,7 +68,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Link
               to="/cart"
               className="relative p-3 text-gray-700 hover:text-primary-600 transition-all duration-300 hover:bg-primary-50 rounded-full group"
@@ -82,8 +93,20 @@ const Navbar = () => {
               )}
             </Link>
 
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              className="md:hidden p-3 rounded-full hover:bg-gray-100 transition"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
             {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
+              <div className="hidden md:flex items-center space-x-3">
                 <div className="hidden sm:flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-full">
                   <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-primary-700 rounded-full flex items-center justify-center text-white font-bold">
                     {user.name.charAt(0).toUpperCase()}
@@ -100,7 +123,7 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/login"
-                className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full hover:from-primary-700 hover:to-primary-800 font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="hidden md:inline-flex px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-full hover:from-primary-700 hover:to-primary-800 font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
                 Login
               </Link>
@@ -108,6 +131,103 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div className="md:hidden fixed inset-0 z-[60]">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-y-0 right-0 w-[85%] max-w-sm bg-white shadow-2xl p-5 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-xl font-extrabold gradient-text">Menu</div>
+              <button
+                type="button"
+                className="p-2 rounded-xl hover:bg-gray-100 transition"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {isAuthenticated && (
+              <div className="mb-4 p-3 rounded-2xl bg-gray-50">
+                <div className="text-xs text-gray-500">Signed in as</div>
+                <div className="font-bold text-gray-800 truncate">{user?.name}</div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-3 rounded-xl font-bold text-gray-800 hover:bg-gray-50 transition"
+              >
+                Home
+              </Link>
+              <Link
+                to="/products"
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-3 rounded-xl font-bold text-gray-800 hover:bg-gray-50 transition"
+              >
+                Products
+              </Link>
+              {isAuthenticated && (
+                <Link
+                  to="/orders"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 rounded-xl font-bold text-gray-800 hover:bg-gray-50 transition"
+                >
+                  My Orders
+                </Link>
+              )}
+              {user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 rounded-xl font-extrabold text-white bg-gradient-to-r from-primary-600 to-primary-700 shadow-md hover:shadow-lg transition"
+                >
+                  Admin Panel
+                </Link>
+              )}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              {!isAuthenticated ? (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 text-center px-4 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 text-white font-extrabold shadow-md hover:shadow-lg transition"
+                >
+                  Login
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-extrabold shadow-md hover:shadow-lg transition"
+                >
+                  Logout
+                </button>
+              )}
+              <Link
+                to="/cart"
+                onClick={() => setMobileOpen(false)}
+                className="flex-1 text-center px-4 py-3 rounded-xl bg-gray-100 text-gray-900 font-extrabold hover:bg-gray-200 transition"
+              >
+                Cart
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

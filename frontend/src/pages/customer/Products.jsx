@@ -62,7 +62,7 @@ const Products = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fadeIn">
-      <h1 className="text-5xl font-extrabold mb-8 text-center gradient-text">Our Products</h1>
+      <h1 className="text-3xl sm:text-5xl font-extrabold mb-8 text-center gradient-text">Our Products</h1>
 
       {/* Filters */}
       <div className="glass p-6 rounded-2xl shadow-xl mb-8 backdrop-blur-lg">

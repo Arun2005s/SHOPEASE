@@ -160,24 +160,24 @@ const Cart = () => {
             {cart.map((item, index) => (
               <div
                 key={item._id}
-                className="flex items-center space-x-6 py-6 border-b border-gray-200 last:border-b-0 group hover:bg-gray-50 rounded-xl px-4 transition-all duration-300"
+                className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-6 border-b border-gray-200 last:border-b-0 group hover:bg-gray-50 rounded-xl px-4 transition-all duration-300"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="image-zoom w-28 h-28 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all">
+                <div className="image-zoom w-28 h-28 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all mx-auto sm:mx-0">
                   <img
                     src={item.imageUrl}
                     alt={item.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-grow">
+                <div className="flex-grow min-w-0">
                   <h3 className="font-bold text-xl mb-1 text-gray-800 group-hover:text-primary-600 transition-colors">
                     {item.name}
                   </h3>
                   <p className="text-primary-600 font-bold text-lg">₹{item.price} / {item.unit || 'piece'}</p>
                 </div>
-                <div className="flex items-center space-x-6">
-                  <div className="flex items-center space-x-3 bg-gray-100 rounded-full p-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                  <div className="flex items-center space-x-3 bg-gray-100 rounded-full p-2 w-fit mx-auto sm:mx-0">
                     <button
                       onClick={() => updateQuantity(item._id, item.quantity - 1)}
                       className="w-10 h-10 bg-white rounded-full shadow-md hover:bg-primary-600 hover:text-white transition-all duration-300 flex items-center justify-center font-bold text-lg hover:scale-110"
@@ -192,12 +192,12 @@ const Cart = () => {
                       +
                     </button>
                   </div>
-                  <p className="font-bold text-xl w-24 text-right text-primary-600">
+                  <p className="font-bold text-xl text-primary-600 sm:w-24 sm:text-right">
                     ₹{(item.price * item.quantity).toFixed(2)}
                   </p>
                   <button
                     onClick={() => removeFromCart(item._id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-full transition-all duration-300 hover:scale-110"
+                    className="self-start text-red-600 hover:text-red-700 hover:bg-red-50 p-3 rounded-full transition-all duration-300 hover:scale-110"
                     title="Remove item"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -17,6 +17,11 @@ body {
   box-sizing: border-box;
 }
 
+/* Prevent horizontal scroll on small devices */
+html, body {
+  overflow-x: hidden;
+}
+
 /* Custom Animations */
 @keyframes fadeIn {
   from {

@@ -106,7 +106,7 @@ const Orders = () => {
             className="glass rounded-2xl shadow-2xl p-8 backdrop-blur-lg card-hover"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pb-4 border-b-2 border-gray-200">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Order ID</p>
                 <p className="text-lg font-bold text-gray-800 font-mono">{order._id.slice(-8).toUpperCase()}</p>
@@ -133,16 +133,16 @@ const Orders = () => {
               {order.products.map((item, idx) => (
                 <div 
                   key={idx} 
-                  className="flex items-center space-x-6 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all group"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all group"
                 >
-                  <div className="image-zoom w-20 h-20 rounded-xl overflow-hidden shadow-lg">
+                  <div className="image-zoom w-20 h-20 rounded-xl overflow-hidden shadow-lg mx-auto sm:mx-0">
                     <img
                       src={item.imageUrl}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex-grow">
+                  <div className="flex-grow min-w-0">
                     <p className="font-bold text-lg text-gray-800 group-hover:text-primary-600 transition-colors">
                       {item.name}
                     </p>
@@ -150,7 +150,9 @@ const Orders = () => {
                       Quantity: <span className="font-semibold">{item.quantity}</span> {item.unit || 'piece'} × ₹{item.price}
                     </p>
                   </div>
-                  <p className="font-bold text-xl text-primary-600">₹{item.price * item.quantity}</p>
+                  <p className="font-bold text-xl text-primary-600 sm:text-right">
+                    ₹{item.price * item.quantity}
+                  </p>
                 </div>
               ))}
             </div>

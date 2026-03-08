@@ -55,10 +55,10 @@ const Home = () => {
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
         </div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-6xl md:text-7xl font-extrabold mb-6 animate-slideIn">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-6 animate-slideIn">
             Welcome to <span className="text-yellow-300">ShopEase</span>
           </h1>
-          <p className="text-2xl md:text-3xl mb-10 font-light animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+          <p className="text-lg sm:text-2xl md:text-3xl mb-10 font-light animate-fadeIn" style={{ animationDelay: '0.2s' }}>
             Your One-Stop Indian Department Store
           </p>
           <Link
