@@ -17,6 +17,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminReports from './pages/admin/AdminReports';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -60,6 +61,7 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="reports" element={<AdminReports />} />
             </Route>
 
             {/* 404 */}

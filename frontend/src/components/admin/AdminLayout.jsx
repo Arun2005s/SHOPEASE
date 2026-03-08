@@ -116,6 +116,17 @@ const AdminLayout = () => {
                       Orders
                     </span>
                   </NavLink>
+
+                  <NavLink to="/admin/reports" className={navLinkClass}>
+                    <span className="flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:bg-emerald-100 transition">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V7a2 2 0 00-2-2h-3.586a1 1 0 01-.707-.293L12.414 3.293A1 1 0 0011.707 3H9a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </span>
+                      Reports
+                    </span>
+                  </NavLink>
                 </nav>
               </div>
             </aside>
@@ -188,6 +199,17 @@ const AdminLayout = () => {
                     </svg>
                   </span>
                   Orders
+                </span>
+              </NavLink>
+
+              <NavLink to="/admin/reports" className={navLinkClass} onClick={closeSidebar}>
+                <span className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-6h6v6m-9 4h12a2 2 0 002-2V7a2 2 0 00-2-2h-3.586a1 1 0 01-.707-.293L12.414 3.293A1 1 0 0011.707 3H9a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  Reports
                 </span>
               </NavLink>
             </nav>
