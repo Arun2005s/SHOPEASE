@@ -3,7 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/axios';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CheckoutForm from '../../components/customer/CheckoutForm';
 
 const Cart = () => {
@@ -12,6 +12,28 @@ const Cart = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [discount, setDiscount] = useState(0);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+
+  const subtotal = getCartTotal();
+  const finalTotal = Math.max(0, subtotal - discount);
+
+  useEffect(() => {
+    const fetchAvailableCoupons = async () => {
+      try {
+        const res = await api.get('/coupons/active');
+        setAvailableCoupons(res.data || []);
+      } catch (error) {
+        console.error('Error fetching available coupons:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchAvailableCoupons();
+    }
+  }, [isAuthenticated]);
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -214,18 +236,90 @@ const Cart = () => {
         <div className="lg:col-span-1">
           <div className="glass rounded-2xl shadow-2xl p-8 sticky top-24 backdrop-blur-lg">
             <h2 className="text-3xl font-extrabold mb-6 gradient-text">Order Summary</h2>
-            <div className="space-y-4 mb-6">
+
+            {/* Coupon input */}
+            <div className="mb-6 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <button
+                  type="button"
+                  disabled={!couponCode || subtotal <= 0}
+                  onClick={async () => {
+                    try {
+                      if (!couponCode.trim()) {
+                        toast.error('Please enter a coupon code');
+                        return;
+                      }
+                      const res = await api.post('/coupons/apply', {
+                        code: couponCode.trim(),
+                        amount: subtotal,
+                      });
+                      setDiscount(res.data.discount);
+                      setAppliedCoupon(res.data.coupon);
+                      toast.success(
+                        `Coupon applied! You saved ₹${res.data.discount.toFixed(2)}`
+                      );
+                    } catch (error) {
+                      console.error('Apply coupon error:', error);
+                      setDiscount(0);
+                      setAppliedCoupon(null);
+                      toast.error(
+                        error.response?.data?.message || 'Failed to apply coupon'
+                      );
+                    }
+                  }}
+                  className="btn-primary px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed"
+                >
+                  Apply Coupon
+                </button>
+              </div>
+              {appliedCoupon && (
+                <p className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded-xl flex justify-between items-center">
+                  <span>
+                    Applied: <strong>{appliedCoupon.code}</strong>{' '}
+                    {appliedCoupon.description && `– ${appliedCoupon.description}`}
+                  </span>
+                  <button
+                    type="button"
+                    className="text-xs text-red-600 hover:text-red-700 ml-3"
+                    onClick={() => {
+                      setDiscount(0);
+                      setAppliedCoupon(null);
+                      setCouponCode('');
+                    }}
+                  >
+                    Remove
+                  </button>
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3 mb-6">
               <div className="flex justify-between text-lg">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-bold">₹{getCartTotal().toFixed(2)}</span>
+                <span className="font-bold">₹{subtotal.toFixed(2)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-lg text-green-700">
+                  <span>
+                    Discount{appliedCoupon?.code ? ` (${appliedCoupon.code})` : ''}
+                  </span>
+                  <span>-₹{discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg">
                 <span className="text-gray-600">Delivery</span>
                 <span className="text-green-600 font-bold">Free 🎉</span>
               </div>
               <div className="border-t-2 border-gray-200 pt-4 flex justify-between font-extrabold text-2xl">
                 <span>Total</span>
-                <span className="text-primary-600">₹{getCartTotal().toFixed(2)}</span>
+                <span className="text-primary-600">₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
             <button
@@ -268,7 +362,7 @@ const Cart = () => {
           setLoading(false);
         }}
         onConfirm={handleConfirmCheckout}
-        cartTotal={getCartTotal()}
+        cartTotal={finalTotal}
         loading={loading}
       />
     </div>

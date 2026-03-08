@@ -19,6 +19,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import couponRoutes from './routes/couponRoutes.js';
 import User from './models/User.js';
 
 // Debug: Log all environment variables (without exposing secrets)
@@ -86,6 +87,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/coupons', couponRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

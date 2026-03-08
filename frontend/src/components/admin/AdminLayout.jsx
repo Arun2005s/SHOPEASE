@@ -117,6 +117,17 @@ const AdminLayout = () => {
                     </span>
                   </NavLink>
 
+                  <NavLink to="/admin/coupons" className={navLinkClass}>
+                    <span className="flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:bg-purple-100 transition">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v2m0 0v6a2 2 0 002 2h2m-4-8h4m6-4h2a2 2 0 012 2v2m0 0v6a2 2 0 01-2 2h-2m4-8h-4" />
+                        </svg>
+                      </span>
+                      Coupons
+                    </span>
+                  </NavLink>
+
                   <NavLink to="/admin/reports" className={navLinkClass}>
                     <span className="flex items-center gap-3">
                       <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:bg-emerald-100 transition">
@@ -210,6 +221,16 @@ const AdminLayout = () => {
                     </svg>
                   </span>
                   Reports
+                </span>
+              </NavLink>
+              <NavLink to="/admin/coupons" className={navLinkClass} onClick={closeSidebar}>
+                <span className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v2m0 0v6a2 2 0 002 2h2m-4-8h4m6-4h2a2 2 0 012 2v2m0 0v6a2 2 0 01-2 2h-2m4-8h-4" />
+                    </svg>
+                  </span>
+                  Coupons
                 </span>
               </NavLink>
             </nav>
