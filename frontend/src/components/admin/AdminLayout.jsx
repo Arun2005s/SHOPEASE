@@ -95,6 +95,22 @@ const AdminLayout = () => {
                     </span>
                   </NavLink>
 
+                  <NavLink to="/admin/statistics" className={navLinkClass}>
+                    <span className="flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 19h16M5 15l3-6 4 8 3-5 4 7"
+                          />
+                        </svg>
+                      </span>
+                      Statistics
+                    </span>
+                  </NavLink>
+
                   <NavLink to="/admin/products" className={navLinkClass}>
                     <span className="flex items-center gap-3">
                       <span className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center group-hover:bg-blue-100 transition">
@@ -190,6 +206,21 @@ const AdminLayout = () => {
                     </svg>
                   </span>
                   Dashboard
+                </span>
+              </NavLink>
+              <NavLink to="/admin/statistics" className={navLinkClass} onClick={closeSidebar}>
+                <span className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 19h16M5 15l3-6 4 8 3-5 4 7"
+                      />
+                    </svg>
+                  </span>
+                  Statistics
                 </span>
               </NavLink>
               <NavLink to="/admin/products" className={navLinkClass} onClick={closeSidebar}>

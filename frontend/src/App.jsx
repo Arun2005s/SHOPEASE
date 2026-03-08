@@ -19,6 +19,7 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminReports from './pages/admin/AdminReports';
 import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminStatistics from './pages/admin/AdminStatistics';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -62,6 +63,7 @@ function App() {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="statistics" element={<AdminStatistics />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="coupons" element={<AdminCoupons />} />
             </Route>
