@@ -83,16 +83,19 @@ const AdminOrders = () => {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">All Orders</h1>
-        <div className="w-64">
+    <div className="animate-fadeIn">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold gradient-text">All Orders</h1>
+          <p className="text-gray-600 mt-1">Search orders and update fulfillment status.</p>
+        </div>
+        <div className="w-full sm:w-80">
           <input
             type="text"
             placeholder="Search by Order ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm hover:shadow-md bg-white/80 backdrop-blur"
           />
         </div>
       </div>
@@ -108,8 +111,8 @@ const AdminOrders = () => {
       ) : (
         <div className="space-y-4">
           {filteredOrders.map((order) => (
-            <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-start mb-4">
+            <div key={order._id} className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-6 card-hover">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-600">Order ID: {order._id.slice(-8)}</p>
                   <p className="text-sm text-gray-600">
@@ -121,18 +124,16 @@ const AdminOrders = () => {
                       : order.userId?.slice(-8) || 'N/A'}
                   </p>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
-                      order.status
-                    )}`}
+                    className={`px-3 py-1.5 rounded-full text-sm font-bold ${getStatusColor(order.status)}`}
                   >
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </span>
                   <select
                     value={order.status}
                     onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white hover:shadow-sm transition"
                   >
                     <option value="pending">Pending</option>
                     <option value="confirmed">Confirmed</option>
@@ -145,19 +146,19 @@ const AdminOrders = () => {
 
               <div className="space-y-3 mb-4">
                 {order.products.map((item, idx) => (
-                  <div key={idx} className="flex items-center space-x-4">
+                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded"
+                      className="w-16 h-16 object-cover rounded-xl shadow-sm"
                     />
-                    <div className="flex-grow">
-                      <p className="font-semibold">{item.name}</p>
+                    <div className="flex-grow min-w-0">
+                      <p className="font-bold text-gray-800 truncate">{item.name}</p>
                       <p className="text-sm text-gray-600">
                         Quantity: {item.quantity} {item.unit || 'piece'} × ₹{item.price}
                       </p>
                     </div>
-                    <p className="font-semibold">₹{item.price * item.quantity}</p>
+                    <p className="font-extrabold text-primary-600">₹{item.price * item.quantity}</p>
                   </div>
                 ))}
               </div>

@@ -199,14 +199,17 @@ const AdminProducts = () => {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Product Management</h1>
+    <div className="animate-fadeIn">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold gradient-text">Product Management</h1>
+          <p className="text-gray-600 mt-1">Create, update, and manage your catalog.</p>
+        </div>
         <button
           onClick={() => openModal()}
-          className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+          className="btn-primary px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-bold shadow-md hover:shadow-xl transition w-full sm:w-auto"
         >
-          Add Product
+          + Add Product
         </button>
       </div>
 
@@ -217,32 +220,38 @@ const AdminProducts = () => {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {products.map((product) => (
             <div
               key={product._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
+              className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 overflow-hidden card-hover group"
             >
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-48 object-cover"
-              />
+              <div className="image-zoom h-48 bg-gray-100">
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+              </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-primary-600 font-bold mb-2">₹{product.price} / {product.unit || 'piece'}</p>
+                <h3 className="font-extrabold text-lg mb-2 text-gray-800 group-hover:text-primary-700 transition-colors line-clamp-2">
+                  {product.name}
+                </h3>
+                <p className="text-primary-600 font-extrabold mb-2">
+                  ₹{product.price} <span className="text-sm text-gray-500 font-semibold">/ {product.unit || 'piece'}</span>
+                </p>
                 <p className="text-sm text-gray-600 mb-2">Category: {product.category}</p>
                 <p className="text-sm text-gray-600 mb-2">Stock: {product.stock} {product.unit || 'piece'}</p>
-                <div className="flex space-x-2 mt-4">
+                <div className="flex flex-col sm:flex-row gap-2 mt-4">
                   <button
                     onClick={() => openModal(product)}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition font-bold shadow-md hover:shadow-lg transform hover:translate-y-[-1px]"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(product._id)}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition font-bold shadow-md hover:shadow-lg transform hover:translate-y-[-1px]"
                   >
                     Delete
                   </button>
