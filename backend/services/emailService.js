@@ -40,6 +40,7 @@ const getEmailTransporter = async () => {
       host: emailHost,
       port: emailPort,
       secure: emailPort === 465, // true for 465, false for other ports
+      family: 4, // FORCE IPv4 (important for Render)
       auth: {
         user: emailUser,
         pass: emailPassword,
@@ -49,7 +50,7 @@ const getEmailTransporter = async () => {
       greetingTimeout: 10000,
       socketTimeout: 10000,
     });
-    
+
     // Verify connection on initialization (but don't block if it fails)
     console.log('🔍 Verifying email connection...');
     try {
@@ -59,7 +60,7 @@ const getEmailTransporter = async () => {
       console.warn('⚠️ Email connection verification failed, but transporter created:', verifyError.message);
       console.warn('   Emails may still work. If not, check your SMTP settings.');
     }
-    
+
     emailTransporterInitializing = false;
     return emailTransporter;
   } catch (error) {
@@ -82,7 +83,7 @@ const getEmailTransporter = async () => {
  */
 const createOrderStatusEmailTemplate = (customerName, orderId, status, orderDetails) => {
   const shortOrderId = orderId.slice(-8).toUpperCase();
-  
+
   const statusMessages = {
     'pending': {
       title: 'Order Pending Confirmation',
@@ -228,7 +229,7 @@ const createOrderStatusEmailTemplate = (customerName, orderId, status, orderDeta
  */
 const createOrderPlacedEmailTemplate = (customerName, orderId, totalAmount, orderDetails) => {
   const shortOrderId = orderId.slice(-8).toUpperCase();
-  
+
   return `
 <!DOCTYPE html>
 <html>
